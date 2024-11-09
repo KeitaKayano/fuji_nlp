@@ -1,3 +1,6 @@
 .bash_history
 .DS_Store
 wordsim353/*
+src/custom_model/*
+figures/*
+**/__pycache__/*
