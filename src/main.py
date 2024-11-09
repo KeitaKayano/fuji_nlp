@@ -1,8 +1,13 @@
 import pandas as pd
 import numpy as np
 from gensim import downloader
+from gensim.models import KeyedVectors
 from tqdm import tqdm
 import argparse
+import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+import visualize_corr
 
 
 
@@ -23,10 +28,28 @@ def culcCosSim(row, model):
         print(f"単語が見つかりません: {e}")
         return np.nan  # 存在しない単語の場合はNaNを返す
 
+# モデルをロードする関数
+def load_model(model_name):
+    # Gensimで利用可能なモデルのリストを取得
+    available_models = downloader.info()['models']
+
+    # Gensimのモデルリストにある場合はロード
+    if model_name in available_models:
+        print(f"Gensimからモデル '{model_name}' をロードします。")
+        return downloader.load(model_name)
+    else:
+        # custom_modelディレクトリにファイルが存在するかチェック
+        model_path = f"/workspace/src/custom_model/{model_name}.bin"
+        if os.path.exists(model_path):
+            print(f"custom_modelディレクトリからモデル '{model_name}' をロードします。")
+            return KeyedVectors.load_word2vec_format(model_path, binary=True)
+        else:
+            raise ValueError(f"指定されたモデル '{model_name}' がGensimにもcustom_modelディレクトリにも存在しません。")
+
 # メイン処理
 def main():
     # Gensimで利用可能なモデルのリストを取得
-    available_models = list(downloader.info()['models'].keys())
+    available_models = list(downloader.info()['models'])
     model_list_str = "\n".join(available_models)
 
     # コマンドライン引数をパース
@@ -38,15 +61,22 @@ def main():
     args = parser.parse_args()
 
     # モデルをダウンロードしてロード
-    model = downloader.load(args.model)
+    model = load_model(args.model)
 
     missing_word_count = 0
 
     # データの読み込みと類似度計算
     tqdm.pandas()
     df = pd.read_csv('wordsim353/combined.csv')
-    df['cosSim'] = df.progress_apply(lambda row: culcCosSim(row, model), axis=1)
+    df['cosSim'] = df.apply(lambda row: culcCosSim(row, model), axis=1)
     missing_word_count = df['cosSim'].isna().sum()  # NaNの数をカウント
+
+    print(df[1:6])
+
+    # 欠損値を含む行を削除
+    df = df.dropna()
+
+    visualize_corr.plot_correlation(df['Human (mean)'], df['cosSim'], "Scatter Plot of Human (mean) vs cosSim", f"/workspace/figures/scatter_plot_{args.model}.png")
 
     # スピアマン相関係数を計算して表示
     print(df[['Human (mean)', 'cosSim']].corr(method='spearman'))
