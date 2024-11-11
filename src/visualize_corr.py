@@ -5,23 +5,28 @@ from scipy.stats import spearmanr, pearsonr
 
 
 # プロットを描画する関数
-def plot_correlation(x, y, title, save_path):
+def plot_correlation(x, y, title, save_path, separate_color=0, X_label='X', Y_label='Y'):
     # スピアマン相関係数とピアソン相関係数を計算
     spearman_corr, _ = spearmanr(x, y)
     pearson_corr, _ = pearsonr(x, y)
 
     # 散布図の描画
     plt.figure(figsize=(10, 6))
-    sns.scatterplot(x=x, y=y, color='blue', alpha=0.6, edgecolor='w', s=60)
-    
+    if separate_color > 0:
+        sns.scatterplot(x=x[:separate_color], y=y[:separate_color], color='blue', alpha=0.6, edgecolor='w', s=60, label='set 1')
+        sns.scatterplot(x=x[separate_color:], y=y[separate_color:], color='red', alpha=0.6, edgecolor='w', s=60, label='set 2')
+    else:
+        sns.scatterplot(x=x, y=y, color='blue', alpha=0.6, edgecolor='w', s=60)
+
     # 相関係数をプロット上に表示
     plt.title(title, fontsize=15)
-    plt.xlabel("X", fontsize=12)
-    plt.ylabel("Y", fontsize=12)
+    plt.xlabel(X_label, fontsize=12)
+    plt.ylabel(Y_label, fontsize=12)
     plt.text(0.05, 0.95, f"Spearman: {spearman_corr:.2f}", ha='left', va='center', transform=plt.gca().transAxes, fontsize=12, color='purple')
     plt.text(0.05, 0.90, f"Pearson: {pearson_corr:.2f}", ha='left', va='center', transform=plt.gca().transAxes, fontsize=12, color='green')
 
     # 画像の保存
+    plt.legend()
     plt.savefig(save_path)
     plt.close()
 

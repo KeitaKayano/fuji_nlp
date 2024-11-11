@@ -76,7 +76,7 @@ def main():
     # 欠損値を含む行を削除
     df = df.dropna()
 
-    visualize_corr.plot_correlation(df['Human (mean)'], df['cosSim'], "Scatter Plot of Human (mean) vs cosSim", f"/workspace/figures/scatter_plot_{args.model}.png")
+    visualize_corr.plot_correlation(df['Human (mean)'], df['cosSim'], "Scatter Plot of Human (mean) vs cosSim", f"/workspace/figures/scatter_plot_{args.model}.png", separate_color=153, X_label='Human(mean)', Y_label='cosSim')
 
     # スピアマン相関係数を計算して表示
     print(df[['Human (mean)', 'cosSim']].corr(method='spearman'))
