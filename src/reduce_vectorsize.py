@@ -15,7 +15,7 @@ def main():
     word_vectors = np.array([model.get_vector(word) for word in words])
     print(word_vectors.shape)
 
-    # 次元削減 (例: 300次元から50次元へ)
+    # 次元削減 (寄与率が90%になるまで次元削減)
     pca = PCA(n_components=0.9)
     reduced_vectors = pca.fit_transform(word_vectors)
     print(reduced_vectors.shape)
